@@ -1,0 +1,3277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Conditional Challenge · Saber Pro Style V2</title>
+  <style>
+    :root {
+      --bg:#08111f; --card:#111c2f; --card2:#17243a; --ink:#eef5ff; --muted:#a9b9d4;
+      --accent:#7dd3fc; --accent2:#c084fc; --success:#22c55e; --danger:#ef4444; --warning:#f59e0b;
+      --line:rgba(255,255,255,.13); --shadow:0 22px 70px rgba(0,0,0,.38); --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:radial-gradient(circle at top left,rgba(125,211,252,.18),transparent 33%),radial-gradient(circle at bottom right,rgba(192,132,252,.16),transparent 38%),var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent;user-select:none;overflow-x:hidden}
+    input,textarea,select{user-select:text;-webkit-user-select:text}
+    body.completed{user-select:text}
+    .canvas-bg{position:fixed;inset:0;z-index:-1;opacity:.55;pointer-events:none}
+    .wrap{width:min(1120px,96vw);margin:0 auto;padding:18px 0 36px}
+    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:stretch;margin-bottom:18px}
+    .hero-card,.panel{background:linear-gradient(145deg,rgba(17,28,47,.95),rgba(23,36,58,.90));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(10px)}
+    .hero-card{padding:22px;min-height:180px;position:relative;overflow:hidden}
+    h1{font-size:clamp(1.7rem,4vw,3.2rem);line-height:1.02;margin:0 0 10px;letter-spacing:-.04em}
+    h2{margin:0 0 10px;font-size:1.35rem} h3{margin:18px 0 8px;font-size:1rem;color:#d8e7ff}
+    .subtitle,.soft{color:var(--muted);font-size:1rem;line-height:1.55;margin:0}
+    .tagrow,.chips,.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .chip{border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:999px;padding:7px 11px;color:#dbeafe;font-size:.86rem}
+    .side{padding:18px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+    .metric{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:16px;padding:12px}
+    .metric b{font-size:1.35rem;color:#fff}
+    .screen{display:none} .screen.active{display:block}
+    .panel{padding:20px;margin-bottom:18px}
+    label{display:block;font-weight:700;margin:12px 0 6px;color:#dbeafe}
+    input[type="text"],textarea,select{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:var(--ink);border-radius:14px;padding:14px;font:inherit;outline:none}
+    select option{background:#111c2f;color:#eef5ff}
+    input[type="text"]:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(125,211,252,.18)}
+    button{border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06111f;font-weight:900;cursor:pointer;box-shadow:0 10px 30px rgba(125,211,252,.18)}
+    button.secondary{background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+    button.danger{background:linear-gradient(135deg,#fb7185,#ef4444);color:white}
+    button:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.45)}
+    .exam-head{display:flex;justify-content:space-between;gap:12px;align-items:center;position:sticky;top:0;z-index:4;padding:10px;background:rgba(8,17,31,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+    .progress-wrap{height:12px;background:rgba(255,255,255,.09);border-radius:999px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.25s ease}
+    .part-banner{display:flex;justify-content:space-between;gap:14px;align-items:center;background:linear-gradient(135deg,rgba(125,211,252,.10),rgba(192,132,252,.12));border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+    .part-title{font-size:1.05rem;font-weight:900;color:#fff}
+    .context{white-space:pre-wrap;background:rgba(255,255,255,.07);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:18px;padding:18px;line-height:1.65;font-size:1.04rem;margin:14px 0}
+    .prompt{font-size:1.18rem;font-weight:850;line-height:1.45;margin:14px 0}
+    .options{display:grid;gap:12px;margin-top:14px}
+    .option{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;text-align:left;background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line);box-shadow:none;border-radius:18px;padding:15px;line-height:1.45;font-weight:650}
+    .option:hover:not(:disabled){border-color:rgba(125,211,252,.65);background:rgba(125,211,252,.09)}
+    .option.selected{border-color:var(--accent);background:rgba(125,211,252,.14)}
+    .option.correctSelected{border-color:rgba(34,197,94,.8);background:rgba(34,197,94,.14)}
+    .option.incorrectSelected{border-color:rgba(239,68,68,.8);background:rgba(239,68,68,.12)}
+    .letter{min-width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;background:rgba(255,255,255,.13);font-weight:950;color:#fff}
+    .feedback{margin-top:14px;border-radius:16px;padding:13px;border:1px solid var(--line);background:rgba(255,255,255,.06);font-weight:850}
+    .feedback.ok{border-color:rgba(34,197,94,.65);background:rgba(34,197,94,.12);color:#bbf7d0}
+    .feedback.bad{border-color:rgba(239,68,68,.65);background:rgba(239,68,68,.12);color:#fecaca}
+    .feedback.warn{border-color:rgba(245,158,11,.65);background:rgba(245,158,11,.12);color:#fde68a}
+    .gap-grid{display:grid;gap:14px;margin-top:14px}
+    .gap-card{display:grid;gap:8px;background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:16px;padding:14px}
+    .option-bank{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+    .bank-item{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:10px;line-height:1.35}
+    .statusline{min-height:26px;margin-top:12px;color:var(--muted);font-weight:700}
+    .okText{color:#86efac} .badText{color:#fca5a5} .warnText{color:#fcd34d}
+    .result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+    .result-card{background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:center}
+    .result-card b{display:block;font-size:2rem;margin-bottom:3px}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px}
+    th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left} th{background:rgba(255,255,255,.07);color:#dbeafe}
+    .review{display:none;margin-top:18px} .review.show{display:block}
+    .review-item{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0;line-height:1.55}
+    .lock{display:none;position:fixed;inset:0;z-index:20;background:rgba(2,6,23,.88);backdrop-filter:blur(8px);place-items:center;padding:18px}
+    .lock.show{display:grid}
+    .lock-card{width:min(520px,94vw);background:linear-gradient(145deg,#111827,#1f2937);border:1px solid rgba(255,255,255,.16);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.22s ease;background:#0f172a;color:white;border:1px solid var(--line);border-radius:999px;padding:12px 16px;z-index:25;box-shadow:var(--shadow)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .small{font-size:.86rem;color:var(--muted)}
+    @media(max-width:820px){.hero{grid-template-columns:1fr}.exam-head{position:relative;align-items:flex-start;flex-direction:column}.part-banner{flex-direction:column;align-items:flex-start}.option-bank{grid-template-columns:1fr}.result-grid{grid-template-columns:1fr 1fr}.wrap{width:min(100vw - 18px,1120px);padding:10px 0 24px}.panel{padding:15px}button{width:100%}.btn-row{display:grid;grid-template-columns:1fr;gap:10px}}
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas" class="canvas-bg"></canvas>
+  <div class="wrap">
+    <header class="hero">
+      <section class="hero-card">
+        <div class="tagrow"><span class="chip">Saber Pro style</span><span class="chip">Zero · First · Second Conditional</span><span class="chip">Challenge mode</span></div>
+        <h1>Conditional Challenge</h1>
+        <p class="subtitle">Evaluación interactiva por partes. Banco de 150 preguntas; se aplican 60 en orden progresivo por parte, con preguntas y opciones aleatorias dentro de cada sección.</p>
+      </section>
+      <aside class="side hero-card">
+        <div class="metric"><b>150</b><span>preguntas en banco</span></div>
+        <div class="metric"><b>60</b><span>preguntas aplicadas</span></div>
+        <div class="metric"><b>4</b><span>partes organizadas</span></div>
+      </aside>
+    </header>
+
+    <main>
+      <section class="screen active" id="startScreen">
+        <div class="panel">
+          <h2>Inicio de evaluación</h2>
+          <p class="soft">La plataforma inicia siempre desde esta matriz de inicio. Al presionar Start activity, se genera un intento nuevo desde cero; la primera respuesta seleccionada queda guardada y se muestra si fue correcta o incorrecta. En la parte de textos con espacios, deben completar tres brechas usando nueve opciones.</p>
+          <div class="btn-row" style="margin-top:16px"><button type="button" id="startActivityBtn">Start activity</button></div>
+        </div>
+        <div class="panel">
+          <h2>Configuración de partes</h2>
+          <table>
+            <tr><th>Parte</th><th>Banco</th><th>Aplicadas</th><th>Enfoque</th></tr>
+            <tr><td>Part 1</td><td>30</td><td>12</td><td>Descripción y oración correcta</td></tr>
+            <tr><td>Part 2</td><td>30</td><td>12</td><td>Conversaciones cortas</td></tr>
+            <tr><td>Part 3</td><td>45</td><td>18</td><td>Texto con 3 espacios + 9 opciones</td></tr>
+            <tr><td>Part 4</td><td>45</td><td>18</td><td>Comprensión lectora</td></tr>
+          </table>
+        </div>
+        <div class="panel">
+          <h2>Seguridad activa</h2>
+          <p class="soft">Se permite escribir en campos autorizados. Las acciones externas como cambio de pestaña, pérdida de foco, copiar, pegar, imprimir, menú contextual o atajos restringidos bloquean la evaluación e invalidan la pregunta activa.</p>
+        </div>
+      </section>
+
+      <section class="screen" id="examScreen">
+        <div class="exam-head">
+          <div>
+            <div class="chips"><span class="chip" id="progressText">Pregunta 1 de 60</span><span class="chip" id="answeredChip">0/60 respondidas</span><span class="chip" id="securityChip">0 eventos de seguridad</span><span class="chip">Tiempo: <b id="elapsedTime">00:00</b></span></div>
+            <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+          </div>
+          <canvas id="progressCanvas" width="74" height="74"></canvas>
+        </div>
+        <div class="panel">
+          <div class="part-banner"><div><div class="part-title" id="partChip">Part</div><div class="small" id="instructionText">Instruction</div></div><div class="chips"><span class="chip" id="skillChip">Skill</span><span class="chip" id="sectionIndexChip">Section</span></div></div>
+          <div id="contextText" class="context"></div>
+          <div id="promptText" class="prompt"></div>
+          <div id="optionsBox" class="options"></div>
+          <div id="gapBox" class="gap-grid"></div>
+          <div id="feedbackBox" class="feedback warn">Seleccionen una respuesta para recibir retroalimentación inmediata.</div>
+          <div class="statusline" id="questionStatus"></div>
+          <div class="btn-row" style="margin-top:16px"><button type="button" class="secondary" id="prevBtn">Anterior</button><button type="button" class="secondary" id="overviewBtn">Ver avance</button><button type="button" id="nextBtn">Guardar y continuar</button></div>
+        </div>
+      </section>
+
+      <section class="screen" id="resultScreen">
+        <div class="panel">
+          <h2>Resultado final</h2><p class="soft" id="teamSummary"></p>
+          <div class="result-grid"><div class="result-card"><b id="scoreBox">0/60</b><span>correctas</span></div><div class="result-card"><b id="gradeBox">0.0</b><span>nota / 5.0</span></div><div class="result-card"><b id="timeBox">00:00</b><span>tiempo</span></div><div class="result-card"><b id="violationsBox">0</b><span>eventos de seguridad</span></div></div>
+          <h3>Desempeño por parte</h3><table id="breakdownTable"></table>
+          <div class="btn-row" style="margin-top:16px"><button type="button" id="downloadStudentReport">Descargar reporte del estudiante</button><button type="button" class="secondary" id="teacherReviewBtn">Revisión docente</button><button type="button" class="danger" id="restartBtn">Nuevo intento</button></div>
+          <section class="review" id="reviewBox"></section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="lock" id="lockOverlay"><div class="lock-card"><h2>Evaluación bloqueada</h2><p class="feedback bad" id="lockReason">Se detectó una acción no permitida.</p><p class="soft">La pregunta activa fue invalidada. Solicite al docente el código de desbloqueo.</p><label for="unlockInput">Código docente</label><input id="unlockInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Ingrese el código" /><div class="btn-row" style="margin-top:14px"><button type="button" id="unlockBtn">Desbloquear</button></div><p class="small">El código no aparece en pantalla.</p></div></div>
+  <div class="toast" id="toast"></div>
+
+  <script type="application/json" id="questionBank">[
+{
+"id": "D001",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a normal result of reviewing every day.",
+"options": [
+"If students review lessons every day, they remember more.",
+"If students review lessons every day tomorrow, they will remember more.",
+"If students review lessons every day, they would remember more.",
+"If students review lessons every day will, they remember more.",
+"If students review lessons every day, they would usually respond.",
+"When students review lessons every day, will they remember more.",
+"If students review lessons every day, they remember more tomorrow.",
+"If students review lessons every day yesterday, they remember more."
+],
+"answer": "If students review lessons every day, they remember more."
+},
+{
+"id": "D002",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a repeated result related to drinking water.",
+"options": [
+"If people drink enough water, they feel better.",
+"If people drink enough water tomorrow, they will feel better.",
+"If people drink enough water, they would feel better.",
+"If people drink enough water will, they feel better.",
+"If people drink enough water, they would usually respond.",
+"When people drink enough water, will they feel better.",
+"If people drink enough water, they feel better tomorrow.",
+"If people drink enough water yesterday, they feel better."
+],
+"answer": "If people drink enough water, they feel better."
+},
+{
+"id": "D003",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a normal consequence of ignoring traffic lights.",
+"options": [
+"If drivers ignore red lights, accidents happen.",
+"If drivers ignore red lights tomorrow, it will happen.",
+"If drivers ignore red lights, it would happen.",
+"If drivers ignore red lights will, accidents happen.",
+"If drivers ignore red lights, they would usually respond.",
+"When drivers ignore red lights, will accidents happen.",
+"If drivers ignore red lights, accidents happen tomorrow.",
+"If drivers ignore red lights yesterday, accidents happen."
+],
+"answer": "If drivers ignore red lights, accidents happen."
+},
+{
+"id": "D004",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a repeated learning result.",
+"options": [
+"If children read short stories, they learn new words.",
+"If children read short stories tomorrow, they will learn new words.",
+"If children read short stories, they would learn new words.",
+"If children read short stories will, they learn new words.",
+"If children read short stories, they would usually respond.",
+"When children read short stories, will they learn new words.",
+"If children read short stories, they learn new words tomorrow.",
+"If children read short stories yesterday, they learn new words."
+],
+"answer": "If children read short stories, they learn new words."
+},
+{
+"id": "D005",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a general result about plants.",
+"options": [
+"If plants do not get sunlight, they grow slowly.",
+"If plants do not get sunlight tomorrow, they will grow slowly.",
+"If plants did not get sunlight, they would grow slowly.",
+"If plants do not get sunlight will, they grow slowly.",
+"If plants do not get sunlight, they would usually respond.",
+"When plants do not get sunlight, will they grow slowly.",
+"If plants do not get sunlight, they grow slowly tomorrow.",
+"If plants do not get sunlight yesterday, they grow slowly."
+],
+"answer": "If plants do not get sunlight, they grow slowly."
+},
+{
+"id": "D006",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a normal classroom result.",
+"options": [
+"If students ask questions, they understand the topic better.",
+"If students ask questions tomorrow, they will understand the topic better.",
+"If students ask questions, they would understand the topic better.",
+"If students ask questions will, they understand the topic better.",
+"If students ask questions, they would usually respond.",
+"When students ask questions, will they understand the topic better.",
+"If students ask questions, they understand the topic better tomorrow.",
+"If students ask questions yesterday, they understand the topic better."
+],
+"answer": "If students ask questions, they understand the topic better."
+},
+{
+"id": "D007",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a general result of regular exercise.",
+"options": [
+"If people exercise regularly, they build strength.",
+"If people exercise regularly tomorrow, they will build strength.",
+"If people exercise regularly, they would build strength.",
+"If people exercise regularly will, they build strength.",
+"If people exercise regularly, they would usually respond.",
+"When people exercise regularly, will they build strength.",
+"If people exercise regularly, they build strength tomorrow.",
+"If people exercise regularly yesterday, they build strength."
+],
+"answer": "If people exercise regularly, they build strength."
+},
+{
+"id": "D008",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a usual result with weak internet.",
+"options": [
+"If the Wi-Fi is weak, the video freezes.",
+"If the Wi-Fi is weak tomorrow, it will happen.",
+"If the Wi-Fi were weak, it would happen.",
+"If the Wi-Fi is weak will, the video freezes.",
+"If the Wi-Fi is weak, they would usually respond.",
+"When the Wi-Fi is weak, will the video freezes.",
+"If the Wi-Fi is weak, the video freezes tomorrow.",
+"If the Wi-Fi is weak yesterday, the video freezes."
+],
+"answer": "If the Wi-Fi is weak, the video freezes."
+},
+{
+"id": "D009",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a normal result of recycling.",
+"options": [
+"If families recycle plastic, they reduce waste.",
+"If families recycle plastic tomorrow, they will reduce waste.",
+"If families recycle plastic, they would reduce waste.",
+"If families recycle plastic will, they reduce waste.",
+"If families recycle plastic, they would usually respond.",
+"When families recycle plastic, will they reduce waste.",
+"If families recycle plastic, they reduce waste tomorrow.",
+"If families recycle plastic yesterday, they reduce waste."
+],
+"answer": "If families recycle plastic, they reduce waste."
+},
+{
+"id": "D010",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a common result after poor sleep.",
+"options": [
+"If people sleep badly, they feel tired.",
+"If people sleep badly tomorrow, they will feel tired.",
+"If people sleep badly, they would feel tired.",
+"If people sleep badly will, they feel tired.",
+"If people sleep badly, they would usually respond.",
+"When people sleep badly, will they feel tired.",
+"If people sleep badly, they feel tired tomorrow.",
+"If people sleep badly yesterday, they feel tired."
+],
+"answer": "If people sleep badly, they feel tired."
+},
+{
+"id": "D011",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a possible future result if Ana studies tonight.",
+"options": [
+"If Ana studies tonight, she will pass the quiz.",
+"If Ana studies tonight, she pass the quiz.",
+"If Ana studies every night, she pass the quiz.",
+"If Ana studied tonight, she would pass the quiz.",
+"If Ana will studies tonight, she will pass the quiz.",
+"If Ana studies tonight, she would pass the quiz.",
+"If Ana studies tonight, she will to pass the quiz.",
+"If Ana study tonight, she will pass the quiz."
+],
+"answer": "If Ana studies tonight, she will pass the quiz."
+},
+{
+"id": "D012",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a future plan if it rains tomorrow.",
+"options": [
+"If it rains tomorrow, the team will practice inside.",
+"If it rains tomorrow, the team practice inside.",
+"If it rains every day, the team practice inside.",
+"If it rained tomorrow, the team would practice inside.",
+"If it will rains tomorrow, the team will practice inside.",
+"If it rains tomorrow, the team would practice inside.",
+"If it rains tomorrow, the team will to practice inside.",
+"If it rain tomorrow, the team will practice inside."
+],
+"answer": "If it rains tomorrow, the team will practice inside."
+},
+{
+"id": "D013",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a future decision if the class finishes early.",
+"options": [
+"If we finish early today, we will play a short game.",
+"If we finish early today, we play a short game.",
+"If we finished early today, we would play a short game.",
+"If we will finish early today, we will play a short game.",
+"If we finish early today, we would play a short game.",
+"If we finish early today, we will to play a short game.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If we finish early today, we will play a short game."
+},
+{
+"id": "D014",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a possible future purchase.",
+"options": [
+"If Carlos saves enough money, he will buy a new laptop.",
+"If Carlos saves enough money, he buy a new laptop.",
+"If Carlos saved enough money, he would buy a new laptop.",
+"If Carlos will saves enough money, he will buy a new laptop.",
+"If Carlos saves enough money, he would buy a new laptop.",
+"If Carlos saves enough money, he will to buy a new laptop.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If Carlos saves enough money, he will buy a new laptop."
+},
+{
+"id": "D015",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a future solution to a transport problem.",
+"options": [
+"If the bus arrives late, we will take a taxi.",
+"If the bus arrives late, we take a taxi.",
+"If the bus arrived late, we would take a taxi.",
+"If the will bus arrives late, we will take a taxi.",
+"If the bus arrives late, we would take a taxi.",
+"If the bus arrives late, we will to take a taxi.",
+"If the bus arrive late, we will take a taxi.",
+"Distractor option 8."
+],
+"answer": "If the bus arrives late, we will take a taxi."
+},
+{
+"id": "D016",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a possible future consequence.",
+"options": [
+"If the teacher cancels the meeting, students will work at home.",
+"If the teacher cancels the meeting, students work at home.",
+"If the teacher cancelled the meeting, students would work at home.",
+"If the will teacher cancels the will meeting, students will work at home.",
+"If the teacher cancels the meeting, students would work at home.",
+"If the teacher cancels the meeting, students will to work at home.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If the teacher cancels the meeting, students will work at home."
+},
+{
+"id": "D017",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a future result if Laura finds something.",
+"options": [
+"If Laura finds her notebook, she will complete the activity.",
+"If Laura finds her notebook, she complete the activity.",
+"If Laura found her notebook, she would complete the activity.",
+"If Laura will finds her notebook, she will complete the activity.",
+"If Laura finds her notebook, she would complete the activity.",
+"If Laura finds her notebook, she will to complete the activity.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If Laura finds her notebook, she will complete the activity."
+},
+{
+"id": "D018",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a possible future celebration.",
+"options": [
+"If the group wins the contest, they will celebrate after class.",
+"If the group wins the contest, they celebrate after class.",
+"If the group won the contest, they would celebrate after class.",
+"If the will group wins the will contest, they will celebrate after class.",
+"If the group wins the contest, they would celebrate after class.",
+"If the group wins the contest, they will to celebrate after class.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If the group wins the contest, they will celebrate after class."
+},
+{
+"id": "D019",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a possible future action online.",
+"options": [
+"If the platform fails tonight, the class will use another link.",
+"If the platform fails tonight, the class use another link.",
+"If the platform fails every night, the class use another link.",
+"If the platform failed tonight, the class would use another link.",
+"If the will platform fails tonight, the class will use another link.",
+"If the platform fails tonight, the class would use another link.",
+"If the platform fails tonight, the class will to use another link.",
+"Distractor option 8."
+],
+"answer": "If the platform fails tonight, the class will use another link."
+},
+{
+"id": "D020",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows a possible future family plan.",
+"options": [
+"If my cousin visits this weekend, we will watch a movie.",
+"If my cousin visits this weekend, we watch a movie.",
+"If my cousin visits every weekend, we watch a movie.",
+"If my cousin visited this weekend, we would watch a movie.",
+"If my cousin visits this weekend, we would watch a movie.",
+"If my cousin visits this weekend, we will to watch a movie.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If my cousin visits this weekend, we will watch a movie."
+},
+{
+"id": "D021",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an imaginary result because the speaker does not have enough free time now.",
+"options": [
+"If I had more free time, I would practice English every day.",
+"If I have more free time, I will practice English every day.",
+"If I had more free time, I will practice English every day.",
+"If I had more free time, I would to practice English every day.",
+"If I will have more free time, I would practice English every day.",
+"If I had more free time, I would practiced English every day.",
+"If I has more free time, I would practice English every day.",
+"Distractor option 8."
+],
+"answer": "If I had more free time, I would practice English every day."
+},
+{
+"id": "D022",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an unreal role in the present.",
+"options": [
+"If she were the class leader, she would organize more games.",
+"If she am the class leader, she will organize more games.",
+"If she were the class leader, she will organize more games.",
+"If she were the class leader, she would to organize more games.",
+"If she will be the class leader, she would organize more games.",
+"If she were the class leader, she would organized more games.",
+"If she is the class leader, she would organize more games.",
+"Distractor option 8."
+],
+"answer": "If she were the class leader, she would organize more games."
+},
+{
+"id": "D023",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an imaginary present situation.",
+"options": [
+"If we lived near the university, we would walk to class.",
+"If we live near the university, we will walk to class.",
+"If we lived near the university, we will walk to class.",
+"If we lived near the university, we would to walk to class.",
+"If we will live near the university, we would walk to class.",
+"If we lived near the university, we would walked to class.",
+"If we lives near the university, we would walk to class.",
+"Distractor option 8."
+],
+"answer": "If we lived near the university, we would walk to class."
+},
+{
+"id": "D024",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an imagined result because they probably do not know the answer.",
+"options": [
+"If they knew the answer, they would explain it to us.",
+"If they know the answer, they will explain it to us.",
+"If they knew the answer, they will explain it to us.",
+"If they knew the answer, they would to explain it to us.",
+"If they will know the answer, they would explain it to us.",
+"If they knew the answer, they would explained it to us.",
+"If they knows the answer, they would explain it to us.",
+"Distractor option 8."
+],
+"answer": "If they knew the answer, they would explain it to us."
+},
+{
+"id": "D025",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows advice using the second conditional.",
+"options": [
+"If I were you, I would talk to the teacher.",
+"If I am you, I will talk to the teacher.",
+"If I were you, I will talk to the teacher.",
+"If I were you, I would to talk to the teacher.",
+"If I will be you, I would talk to the teacher.",
+"If I were you, I would talked to the teacher.",
+"If I was you, I would talk to the teacher.",
+"If I is you, I would talk to the teacher."
+],
+"answer": "If I were you, I would talk to the teacher."
+},
+{
+"id": "D026",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an unreal present situation about transportation.",
+"options": [
+"If he had a car, he would drive to work.",
+"If he have a car, he will drive to work.",
+"If he had a car, he will drive to work.",
+"If he had a car, he would to drive to work.",
+"If he will have a car, he would drive to work.",
+"If he had a car, he would drove to work.",
+"If he has a car, he would drive to work.",
+"Distractor option 8."
+],
+"answer": "If he had a car, he would drive to work."
+},
+{
+"id": "D027",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an imagined result about language practice.",
+"options": [
+"If students spoke English every day, they would improve faster.",
+"If students speak English every day, they will improve faster.",
+"If students spoke English every day, they will improve faster.",
+"If students spoke English every day, they would to improve faster.",
+"If students spoke English every day, they would improved faster.",
+"Distractor option 6.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If students spoke English every day, they would improve faster."
+},
+{
+"id": "D028",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an unlikely or unreal situation about a library.",
+"options": [
+"If the library were open at night, more students would study there.",
+"If the library am open at night, more students will study there.",
+"If the library were open at night, more students will study there.",
+"If the library were open at night, more students would to study there.",
+"If the library will be open at night, more students would study there.",
+"If the library were open at night, more students would studied there.",
+"If the library is open at night, more students would study there.",
+"Distractor option 8."
+],
+"answer": "If the library were open at night, more students would study there."
+},
+{
+"id": "D029",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an imagined environmental result.",
+"options": [
+"If people recycled more, the city would be cleaner.",
+"If people recycle more, the city will be cleaner.",
+"If people recycled more, the city will be cleaner.",
+"If people recycled more, the city would to be cleaner.",
+"If people recycled more, the city would was cleaner.",
+"Distractor option 6.",
+"Distractor option 7.",
+"Distractor option 8."
+],
+"answer": "If people recycled more, the city would be cleaner."
+},
+{
+"id": "D030",
+"partKey": "P1",
+"part": "Part 1 · Description and sentence matching",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the description and choose the sentence that matches it best.",
+"context": "",
+"prompt": "Choose the sentence that shows an imagined class activity.",
+"options": [
+"If our class had more time, we would do a debate.",
+"If our class have more time, we will do a debate.",
+"If our class had more time, we will do a debate.",
+"If our class had more time, we would to do a debate.",
+"If our class will have more time, we would do a debate.",
+"If our class had more time, we would did a debate.",
+"If our class has more time, we would do a debate.",
+"Distractor option 8."
+],
+"answer": "If our class had more time, we would do a debate."
+},
+{
+"id": "C001",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What usually happens when students review every day?\nB: ________",
+"options": [
+"They remember more.",
+"They will remember more tomorrow.",
+"They would remember more if they reviewed."
+],
+"answer": "They remember more."
+},
+{
+"id": "C002",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: The Wi-Fi is weak every morning. What happens?\nB: ________",
+"options": [
+"The video freezes.",
+"The video will freeze tonight.",
+"The video would freeze."
+],
+"answer": "The video freezes."
+},
+{
+"id": "C003",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: Why do people feel thirsty after running?\nB: ________",
+"options": [
+"Because their bodies need water.",
+"Because they will need water tomorrow.",
+"Because they would need water if they ran."
+],
+"answer": "Because their bodies need water."
+},
+{
+"id": "C004",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What happens if people do not sleep well?\nB: ________",
+"options": [
+"They feel tired.",
+"They will feel tired next Friday.",
+"They would feel tired."
+],
+"answer": "They feel tired."
+},
+{
+"id": "C005",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: Why do plants grow slowly in a dark room?\nB: ________",
+"options": [
+"They do not get enough sunlight.",
+"They will not get sunlight later.",
+"They would get more sunlight outside."
+],
+"answer": "They do not get enough sunlight."
+},
+{
+"id": "C006",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What happens when students ask questions in class?\nB: ________",
+"options": [
+"They understand better.",
+"They will understand tomorrow.",
+"They would understand if they asked."
+],
+"answer": "They understand better."
+},
+{
+"id": "C007",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What usually happens if families recycle plastic?\nB: ________",
+"options": [
+"They reduce waste.",
+"They will reduce waste next month.",
+"They would reduce waste if they recycled."
+],
+"answer": "They reduce waste."
+},
+{
+"id": "C008",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What happens when drivers ignore road signs?\nB: ________",
+"options": [
+"Accidents happen.",
+"Accidents will happen tomorrow.",
+"Accidents would happen if roads were empty."
+],
+"answer": "Accidents happen."
+},
+{
+"id": "C009",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: Why does the teacher repeat instructions?\nB: ________",
+"options": [
+"Students understand the task better.",
+"Students will understand it next week.",
+"Students would understand it."
+],
+"answer": "Students understand the task better."
+},
+{
+"id": "C010",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What happens if people heat oil too much?\nB: ________",
+"options": [
+"It burns.",
+"It will burn tomorrow.",
+"It would burn if people heated it."
+],
+"answer": "It burns."
+},
+{
+"id": "C011",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: We may finish early today. What will we do?\nB: ________",
+"options": [
+"We will play a short game.",
+"We play a short game every day.",
+"We would play a short game."
+],
+"answer": "We will play a short game."
+},
+{
+"id": "C012",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: It may rain during the picnic tomorrow.\nB: ________",
+"options": [
+"If it rains, we will stay inside.",
+"If it rains, we stay inside every day.",
+"If it rained, we would stay inside."
+],
+"answer": "If it rains, we will stay inside."
+},
+{
+"id": "C013",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: Carlos is saving money for a laptop.\nB: ________",
+"options": [
+"If he saves enough, he will buy one.",
+"If he saves enough, he buys one every day.",
+"If he saved enough, he would buy one."
+],
+"answer": "If he saves enough, he will buy one."
+},
+{
+"id": "C014",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What if the platform fails tonight?\nB: ________",
+"options": [
+"We will use another link.",
+"We use another link every Monday.",
+"We would use another link."
+],
+"answer": "We will use another link."
+},
+{
+"id": "C015",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What will happen if Ana forgets her notebook?\nB: ________",
+"options": [
+"She will borrow one.",
+"She borrows one every time.",
+"She would borrow one."
+],
+"answer": "She will borrow one."
+},
+{
+"id": "C016",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: The team could win the final match.\nB: ________",
+"options": [
+"If they win, they will celebrate.",
+"If they win, they celebrate every week.",
+"If they won, they would celebrate."
+],
+"answer": "If they win, they will celebrate."
+},
+{
+"id": "C017",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: The teacher may cancel the meeting.\nB: ________",
+"options": [
+"If she cancels it, we will work at home.",
+"If she cancels it, we work at home normally.",
+"If she cancelled it, we would work at home."
+],
+"answer": "If she cancels it, we will work at home."
+},
+{
+"id": "C018",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: I may see Peter at the event.\nB: ________",
+"options": [
+"If you see him, you will tell him the news.",
+"If you see him, you tell him the news every day.",
+"If you saw him, you would tell him the news."
+],
+"answer": "If you see him, you will tell him the news."
+},
+{
+"id": "C019",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: The bus might arrive late. What is the plan?\nB: ________",
+"options": [
+"If it arrives late, we will take a taxi.",
+"If it arrives late, we take a taxi every day.",
+"If it arrived late, we would take a taxi."
+],
+"answer": "If it arrives late, we will take a taxi."
+},
+{
+"id": "C020",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: If my cousin visits this weekend, what will you do?\nB: ________",
+"options": [
+"We will watch a movie.",
+"We watch a movie every weekend.",
+"We would watch a movie."
+],
+"answer": "We will watch a movie."
+},
+{
+"id": "C021",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: You do not have much free time now. What would you do if you had more?\nB: ________",
+"options": [
+"I would practice English every day.",
+"I will practice English tomorrow.",
+"I practice English every day."
+],
+"answer": "I would practice English every day."
+},
+{
+"id": "C022",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What would you do if you were the class leader?\nB: ________",
+"options": [
+"I would organize more games.",
+"I will organize more games tomorrow.",
+"I organize more games every day."
+],
+"answer": "I would organize more games."
+},
+{
+"id": "C023",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: We live far from the university.\nB: ________",
+"options": [
+"If we lived near it, we would walk to class.",
+"If we live near it, we will walk tomorrow.",
+"If we live near it, we walk to class every day."
+],
+"answer": "If we lived near it, we would walk to class."
+},
+{
+"id": "C024",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: She is nervous when she speaks English.\nB: ________",
+"options": [
+"If she practiced more, she would feel more confident.",
+"If she practices tonight, she will feel more confident.",
+"If she practices, she feels confident."
+],
+"answer": "If she practiced more, she would feel more confident."
+},
+{
+"id": "C025",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: I don’t know what to do.\nB: ________",
+"options": [
+"If I were you, I would talk to the teacher.",
+"If I am you, I will talk to the teacher.",
+"If I was you, I talk to the teacher."
+],
+"answer": "If I were you, I would talk to the teacher."
+},
+{
+"id": "C026",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: He does not have a car now.\nB: ________",
+"options": [
+"If he had a car, he would drive to work.",
+"If he has a car tomorrow, he will drive to work.",
+"If he has a car, he drives to work."
+],
+"answer": "If he had a car, he would drive to work."
+},
+{
+"id": "C027",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: The library closes very early.\nB: ________",
+"options": [
+"If it were open at night, more students would study there.",
+"If it opens tonight, more students will study there.",
+"When it opens, students study there."
+],
+"answer": "If it were open at night, more students would study there."
+},
+{
+"id": "C028",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: People do not recycle enough in the city.\nB: ________",
+"options": [
+"If they recycled more, the city would be cleaner.",
+"If they recycle tomorrow, the city will be cleaner.",
+"When they recycle, the city is cleaner."
+],
+"answer": "If they recycled more, the city would be cleaner."
+},
+{
+"id": "C029",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: We have only ten minutes left.\nB: ________",
+"options": [
+"If we had more time, we would do a debate.",
+"If we have more time tomorrow, we will debate.",
+"When we have time, we debate."
+],
+"answer": "If we had more time, we would do a debate."
+},
+{
+"id": "C030",
+"partKey": "P2",
+"part": "Part 2 · Conversation completion",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Complete the short conversation with the best answer.",
+"context": "",
+"prompt": "A: What would happen if phones disappeared for a week?\nB: ________",
+"options": [
+"Students would talk more face to face.",
+"Students will talk more tomorrow.",
+"Students talk more every week."
+],
+"answer": "Students would talk more face to face."
+},
+{
+"id": "G001",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Study Club\n\nThe study club meets on Fridays. When students ask questions, they (1) ____. If the group finishes early today, they (2) ____. If students had more time after work, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"understand the topic better",
+"will play a short review game",
+"would prepare extra examples",
+"will understand the topic better",
+"would understand the topic better",
+"play a short review game",
+"prepare extra examples",
+"will prepare extra examples",
+"would play a short review game"
+],
+"answers": {
+"1": "understand the topic better",
+"2": "will play a short review game",
+"3": "would prepare extra examples"
+}
+},
+{
+"id": "G002",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Rainy Trip\n\nThe class is planning a short trip. When people carry umbrellas in heavy rain, they (1) ____. If it rains tomorrow, they (2) ____. If the weather were better, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"stay dry",
+"will visit the museum first",
+"would walk through the old park",
+"will stay dry",
+"would stay dry",
+"visit the museum first",
+"walk through the old park",
+"will walk through the old park",
+"would visit the museum first"
+],
+"answers": {
+"1": "stay dry",
+"2": "will visit the museum first",
+"3": "would walk through the old park"
+}
+},
+{
+"id": "G003",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Exam Day\n\nInstructions are important on exam day. When students read instructions carefully, they (1) ____. If a student arrives late tomorrow, they (2) ____. If the exam were longer, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"avoid many mistakes",
+"will follow the official rule",
+"would have more time to think",
+"will avoid many mistakes",
+"would avoid many mistakes",
+"follow the official rule",
+"have more time to think",
+"will have more time to think",
+"would follow the official rule"
+],
+"answers": {
+"1": "avoid many mistakes",
+"2": "will follow the official rule",
+"3": "would have more time to think"
+}
+},
+{
+"id": "G004",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "New Library\n\nThe university opened a new library. When students use quiet rooms, they (1) ____. If the library opens on Saturday, they (2) ____. If I had a library near my house, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"concentrate better",
+"will study there",
+"would go there every week",
+"will concentrate better",
+"would concentrate better",
+"study there",
+"go there every week",
+"will go there every week",
+"would study there"
+],
+"answers": {
+"1": "concentrate better",
+"2": "will study there",
+"3": "would go there every week"
+}
+},
+{
+"id": "G005",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Virtual Class\n\nThe class sometimes meets online. When students turn on their cameras, they (1) ____. If the platform fails tonight, they (2) ____. If all students had a faster connection, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"participate more actively",
+"will use a different link",
+"would interact more easily",
+"will participate more actively",
+"would participate more actively",
+"use a different link",
+"interact more easily",
+"will interact more easily",
+"would use a different link"
+],
+"answers": {
+"1": "participate more actively",
+"2": "will use a different link",
+"3": "would interact more easily"
+}
+},
+{
+"id": "G006",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Cooking Lesson\n\nStudents are learning simple recipes. When people heat oil too much, they (1) ____. If the teacher brings vegetables tomorrow, they (2) ____. If I had a bigger kitchen, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"burn the food",
+"will make soup",
+"would cook for my family",
+"will burn the food",
+"would burn the food",
+"make soup",
+"cook for my family",
+"will cook for my family",
+"would make soup"
+],
+"answers": {
+"1": "burn the food",
+"2": "will make soup",
+"3": "would cook for my family"
+}
+},
+{
+"id": "G007",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Science Fair\n\nThe class is preparing a science fair. When magnets are near some metals, they (1) ____. If the team finishes the experiment today, they (2) ____. If students had more materials, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"attract them",
+"will record an explanation",
+"would build a larger model",
+"will attract them",
+"would attract them",
+"record an explanation",
+"build a larger model",
+"will build a larger model",
+"would record an explanation"
+],
+"answers": {
+"1": "attract them",
+"2": "will record an explanation",
+"3": "would build a larger model"
+}
+},
+{
+"id": "G008",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Eco Campaign\n\nThe eco club works at school. When students separate plastic from paper, they (1) ____. If the principal gives permission next week, they (2) ____. If more teachers joined the club, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"make recycling easier",
+"will paint new recycling boxes",
+"would reach more classrooms",
+"will make recycling easier",
+"would make recycling easier",
+"paint new recycling boxes",
+"reach more classrooms",
+"will reach more classrooms",
+"would paint new recycling boxes"
+],
+"answers": {
+"1": "make recycling easier",
+"2": "will paint new recycling boxes",
+"3": "would reach more classrooms"
+}
+},
+{
+"id": "G009",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Sports Practice\n\nThe football team trains after class. When players drink water during practice, they (1) ____. If the team wins the match on Friday, they (2) ____. If the field were bigger, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"feel better",
+"will celebrate in the cafeteria",
+"would practice more tactics",
+"will feel better",
+"would feel better",
+"celebrate in the cafeteria",
+"practice more tactics",
+"will practice more tactics",
+"would celebrate in the cafeteria"
+],
+"answers": {
+"1": "feel better",
+"2": "will celebrate in the cafeteria",
+"3": "would practice more tactics"
+}
+},
+{
+"id": "G010",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Museum Visit\n\nA group visits a museum every semester. When visitors read the labels carefully, they (1) ____. If the guide arrives before ten tomorrow, they (2) ____. If the museum were free, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"understand the objects better",
+"will start with the ancient room",
+"would visit it more often",
+"will understand the objects better",
+"would understand the objects better",
+"start with the ancient room",
+"visit it more often",
+"will visit it more often",
+"would start with the ancient room"
+],
+"answers": {
+"1": "understand the objects better",
+"2": "will start with the ancient room",
+"3": "would visit it more often"
+}
+},
+{
+"id": "G011",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Art Exhibition\n\nStudents are preparing an exhibition. When visitors ask questions, they (1) ____. If the school opens the hall on Saturday, they (2) ____. If students had more time, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"explain their ideas better",
+"will invite families",
+"would create larger paintings",
+"will explain their ideas better",
+"would explain their ideas better",
+"invite families",
+"create larger paintings",
+"will create larger paintings",
+"would invite families"
+],
+"answers": {
+"1": "explain their ideas better",
+"2": "will invite families",
+"3": "would create larger paintings"
+}
+},
+{
+"id": "G012",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Debate Club\n\nThe debate club meets on Wednesdays. When students listen carefully, they (1) ____. If the club has enough participants next week, they (2) ____. If students read more news, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"make discussions more respectful",
+"will organize a public debate",
+"would have stronger arguments",
+"will make discussions more respectful",
+"would make discussions more respectful",
+"organize a public debate",
+"have stronger arguments",
+"will have stronger arguments",
+"would organize a public debate"
+],
+"answers": {
+"1": "make discussions more respectful",
+"2": "will organize a public debate",
+"3": "would have stronger arguments"
+}
+},
+{
+"id": "G013",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Volunteer Day\n\nA group plans a volunteer day. When people clean public spaces, they (1) ____. If twenty students register by Friday, they (2) ____. If more families participated, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"improve the community",
+"will create two work teams",
+"would have a stronger impact",
+"will improve the community",
+"would improve the community",
+"create two work teams",
+"have a stronger impact",
+"will have a stronger impact",
+"would create two work teams"
+],
+"answers": {
+"1": "improve the community",
+"2": "will create two work teams",
+"3": "would have a stronger impact"
+}
+},
+{
+"id": "G014",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Reading Marathon\n\nThe class has a reading marathon. When students read ten minutes daily, they (1) ____. If everyone brings a book tomorrow, they (2) ____. If the room had more chairs, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"build vocabulary",
+"will start the activity early",
+"would feel more comfortable",
+"will build vocabulary",
+"would build vocabulary",
+"start the activity early",
+"feel more comfortable",
+"will feel more comfortable",
+"would start the activity early"
+],
+"answers": {
+"1": "build vocabulary",
+"2": "will start the activity early",
+"3": "would feel more comfortable"
+}
+},
+{
+"id": "G015",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Health Week\n\nThe university promotes healthy habits. When people sleep enough, they (1) ____. If the nurse visits the class tomorrow, they (2) ____. If students knew more about nutrition, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"feel more energetic",
+"will give a short talk",
+"would choose better snacks",
+"will feel more energetic",
+"would feel more energetic",
+"give a short talk",
+"choose better snacks",
+"will choose better snacks",
+"would give a short talk"
+],
+"answers": {
+"1": "feel more energetic",
+"2": "will give a short talk",
+"3": "would choose better snacks"
+}
+},
+{
+"id": "G016",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "English Club\n\nThe English club meets after class. When students speak English often, they (1) ____. If new members join this week, they (2) ____. If the club had a bigger room, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"gain confidence",
+"will organize a conversation circle",
+"would invite more participants",
+"will gain confidence",
+"would gain confidence",
+"organize a conversation circle",
+"invite more participants",
+"will invite more participants",
+"would organize a conversation circle"
+],
+"answers": {
+"1": "gain confidence",
+"2": "will organize a conversation circle",
+"3": "would invite more participants"
+}
+},
+{
+"id": "G017",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Community Garden\n\nNeighbors take care of a garden. When plants get enough water, they (1) ____. If the group buys seeds tomorrow, they (2) ____. If more children helped, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"grow faster",
+"will plant flowers",
+"would learn about nature",
+"will grow faster",
+"would grow faster",
+"plant flowers",
+"learn about nature",
+"will learn about nature",
+"would plant flowers"
+],
+"answers": {
+"1": "grow faster",
+"2": "will plant flowers",
+"3": "would learn about nature"
+}
+},
+{
+"id": "G018",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Technology Workshop\n\nStudents learn to use digital tools. When people save their files often, they (1) ____. If the internet works tonight, they (2) ____. If we had newer computers, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"protect their work",
+"will upload the project",
+"would design better posters",
+"will protect their work",
+"would protect their work",
+"upload the project",
+"design better posters",
+"will design better posters",
+"would upload the project"
+],
+"answers": {
+"1": "protect their work",
+"2": "will upload the project",
+"3": "would design better posters"
+}
+},
+{
+"id": "G019",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Music Rehearsal\n\nThe band practices twice a week. When musicians practice slowly, they (1) ____. If the singer arrives on time today, they (2) ____. If the room were quieter, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"play more accurately",
+"will rehearse the new song",
+"would hear each other better",
+"will play more accurately",
+"would play more accurately",
+"rehearse the new song",
+"hear each other better",
+"will hear each other better",
+"would rehearse the new song"
+],
+"answers": {
+"1": "play more accurately",
+"2": "will rehearse the new song",
+"3": "would hear each other better"
+}
+},
+{
+"id": "G020",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Travel Plan\n\nThe group is preparing a trip. When travelers check maps before leaving, they (1) ____. If the bus leaves on time tomorrow, they (2) ____. If we had more money, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"avoid getting lost",
+"will arrive before lunch",
+"would stay another day",
+"will avoid getting lost",
+"would avoid getting lost",
+"arrive before lunch",
+"stay another day",
+"will stay another day",
+"would arrive before lunch"
+],
+"answers": {
+"1": "avoid getting lost",
+"2": "will arrive before lunch",
+"3": "would stay another day"
+}
+},
+{
+"id": "G021",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Class Project\n\nStudents are creating a poster. When team members share responsibilities, they (1) ____. If the printer works today, they (2) ____. If the team had better materials, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"finish tasks faster",
+"will print the final version",
+"would make a stronger presentation",
+"will finish tasks faster",
+"would finish tasks faster",
+"print the final version",
+"make a stronger presentation",
+"will make a stronger presentation",
+"would print the final version"
+],
+"answers": {
+"1": "finish tasks faster",
+"2": "will print the final version",
+"3": "would make a stronger presentation"
+}
+},
+{
+"id": "G022",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "First Aid Talk\n\nThe school invited a nurse. When people wash small cuts, they (1) ____. If the nurse brings materials tomorrow, they (2) ____. If we knew first aid, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"prevent infections",
+"will demonstrate the technique",
+"would help in emergencies",
+"will prevent infections",
+"would prevent infections",
+"demonstrate the technique",
+"help in emergencies",
+"will help in emergencies",
+"would demonstrate the technique"
+],
+"answers": {
+"1": "prevent infections",
+"2": "will demonstrate the technique",
+"3": "would help in emergencies"
+}
+},
+{
+"id": "G023",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Job Interview\n\nStudents practice interview skills. When candidates answer clearly, they (1) ____. If Ana practices tonight, they (2) ____. If she were less nervous, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"make a better impression",
+"will feel prepared",
+"would speak with more confidence",
+"will make a better impression",
+"would make a better impression",
+"feel prepared",
+"speak with more confidence",
+"will speak with more confidence",
+"would feel prepared"
+],
+"answers": {
+"1": "make a better impression",
+"2": "will feel prepared",
+"3": "would speak with more confidence"
+}
+},
+{
+"id": "G024",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Photography Club\n\nStudents take photos around campus. When photographers use natural light, they (1) ____. If the weather improves tomorrow, they (2) ____. If we had a better camera, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"get clearer pictures",
+"will take photos outside",
+"would create a professional album",
+"will get clearer pictures",
+"would get clearer pictures",
+"take photos outside",
+"create a professional album",
+"will create a professional album",
+"would take photos outside"
+],
+"answers": {
+"1": "get clearer pictures",
+"2": "will take photos outside",
+"3": "would create a professional album"
+}
+},
+{
+"id": "G025",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Math Review\n\nThe class reviews basic problems. When students solve examples step by step, they (1) ____. If the teacher has time today, they (2) ____. If students practiced more at home, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"make fewer errors",
+"will explain a challenge problem",
+"would improve their results",
+"will make fewer errors",
+"would make fewer errors",
+"explain a challenge problem",
+"improve their results",
+"will improve their results",
+"would explain a challenge problem"
+],
+"answers": {
+"1": "make fewer errors",
+"2": "will explain a challenge problem",
+"3": "would improve their results"
+}
+},
+{
+"id": "G026",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "School Radio\n\nStudents are preparing a radio program. When speakers practice pronunciation, they (1) ____. If the microphone works tomorrow, they (2) ____. If they had more listeners, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"sound clearer",
+"will record the interview",
+"would produce more episodes",
+"will sound clearer",
+"would sound clearer",
+"record the interview",
+"produce more episodes",
+"will produce more episodes",
+"would record the interview"
+],
+"answers": {
+"1": "sound clearer",
+"2": "will record the interview",
+"3": "would produce more episodes"
+}
+},
+{
+"id": "G027",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Theater Group\n\nStudents are rehearsing a play. When actors memorize their lines, they (1) ____. If the director arrives early today, they (2) ____. If the stage were larger, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"perform with confidence",
+"will rehearse the final scene",
+"would move more freely",
+"will perform with confidence",
+"would perform with confidence",
+"rehearse the final scene",
+"move more freely",
+"will move more freely",
+"would rehearse the final scene"
+],
+"answers": {
+"1": "perform with confidence",
+"2": "will rehearse the final scene",
+"3": "would move more freely"
+}
+},
+{
+"id": "G028",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Language Exchange\n\nTwo classes meet online. When students correct each other politely, they (1) ____. If the partner school connects tomorrow, they (2) ____. If we spoke more fluently, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"learn from mistakes",
+"will do a live conversation",
+"would discuss deeper topics",
+"will learn from mistakes",
+"would learn from mistakes",
+"do a live conversation",
+"discuss deeper topics",
+"will discuss deeper topics",
+"would do a live conversation"
+],
+"answers": {
+"1": "learn from mistakes",
+"2": "will do a live conversation",
+"3": "would discuss deeper topics"
+}
+},
+{
+"id": "G029",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "History Tour\n\nThe guide explains old buildings. When tourists ask relevant questions, they (1) ____. If the group starts early tomorrow, they (2) ____. If the city had more signs, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"understand the tour better",
+"will visit the main square",
+"would explore independently",
+"will understand the tour better",
+"would understand the tour better",
+"visit the main square",
+"explore independently",
+"will explore independently",
+"would visit the main square"
+],
+"answers": {
+"1": "understand the tour better",
+"2": "will visit the main square",
+"3": "would explore independently"
+}
+},
+{
+"id": "G030",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Food Fair\n\nStudents organize a food fair. When people try different dishes, they (1) ____. If families attend on Friday, they (2) ____. If we had a larger budget, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"learn about other cultures",
+"will sell more portions",
+"would invite local chefs",
+"will learn about other cultures",
+"would learn about other cultures",
+"sell more portions",
+"invite local chefs",
+"will invite local chefs",
+"would sell more portions"
+],
+"answers": {
+"1": "learn about other cultures",
+"2": "will sell more portions",
+"3": "would invite local chefs"
+}
+},
+{
+"id": "G031",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Environmental Talk\n\nThe class discusses pollution. When people reduce plastic use, they (1) ____. If the campaign begins next week, they (2) ____. If companies supported the idea, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"produce less waste",
+"will distribute reusable bags",
+"would change faster",
+"will produce less waste",
+"would produce less waste",
+"distribute reusable bags",
+"change faster",
+"will change faster",
+"would distribute reusable bags"
+],
+"answers": {
+"1": "produce less waste",
+"2": "will distribute reusable bags",
+"3": "would change faster"
+}
+},
+{
+"id": "G032",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Reading App\n\nStudents use a reading app. When users practice ten minutes a day, they (1) ____. If the app sends reminders tonight, they (2) ____. If it had more stories, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"read faster",
+"will help students remember",
+"would attract more readers",
+"will read faster",
+"would read faster",
+"help students remember",
+"attract more readers",
+"will attract more readers",
+"would help students remember"
+],
+"answers": {
+"1": "read faster",
+"2": "will help students remember",
+"3": "would attract more readers"
+}
+},
+{
+"id": "G033",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Basketball Training\n\nThe team trains in the afternoon. When players warm up before practice, they (1) ____. If the coach arrives early today, they (2) ____. If the court were covered, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"avoid injuries",
+"will practice free throws",
+"would train when it rains",
+"will avoid injuries",
+"would avoid injuries",
+"practice free throws",
+"train when it rains",
+"will train when it rains",
+"would practice free throws"
+],
+"answers": {
+"1": "avoid injuries",
+"2": "will practice free throws",
+"3": "would train when it rains"
+}
+},
+{
+"id": "G034",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Grammar Clinic\n\nThe teacher opens a grammar clinic. When students compare examples, they (1) ____. If the group brings questions tomorrow, they (2) ____. If the lesson had more time, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"notice the difference",
+"will solve doubts",
+"would include more practice",
+"will notice the difference",
+"would notice the difference",
+"solve doubts",
+"include more practice",
+"will include more practice",
+"would solve doubts"
+],
+"answers": {
+"1": "notice the difference",
+"2": "will solve doubts",
+"3": "would include more practice"
+}
+},
+{
+"id": "G035",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Community Library\n\nThe librarian helps young readers. When children borrow books regularly, they (1) ____. If the library receives donations, they (2) ____. If the building had more space, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"develop reading habits",
+"will buy new shelves",
+"would open a study room",
+"will develop reading habits",
+"would develop reading habits",
+"buy new shelves",
+"open a study room",
+"will open a study room",
+"would buy new shelves"
+],
+"answers": {
+"1": "develop reading habits",
+"2": "will buy new shelves",
+"3": "would open a study room"
+}
+},
+{
+"id": "G036",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Online Quiz\n\nStudents take an online quiz. When learners check their answers, they (1) ____. If the system works tonight, they (2) ____. If the quiz had audio, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"understand their mistakes",
+"will show the score immediately",
+"would test listening skills",
+"will understand their mistakes",
+"would understand their mistakes",
+"show the score immediately",
+"test listening skills",
+"will test listening skills",
+"would show the score immediately"
+],
+"answers": {
+"1": "understand their mistakes",
+"2": "will show the score immediately",
+"3": "would test listening skills"
+}
+},
+{
+"id": "G037",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Career Day\n\nProfessionals visit the school. When students ask about real jobs, they (1) ____. If more speakers confirm tomorrow, they (2) ____. If we had a bigger auditorium, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"make better decisions",
+"will divide the audience into groups",
+"would invite the whole community",
+"will make better decisions",
+"would make better decisions",
+"divide the audience into groups",
+"invite the whole community",
+"will invite the whole community",
+"would divide the audience into groups"
+],
+"answers": {
+"1": "make better decisions",
+"2": "will divide the audience into groups",
+"3": "would invite the whole community"
+}
+},
+{
+"id": "G038",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Writing Workshop\n\nStudents write short paragraphs. When writers organize ideas first, they (1) ____. If the teacher gives feedback today, they (2) ____. If students read more models, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"produce clearer texts",
+"will revise the drafts",
+"would use better connectors",
+"will produce clearer texts",
+"would produce clearer texts",
+"revise the drafts",
+"use better connectors",
+"will use better connectors",
+"would revise the drafts"
+],
+"answers": {
+"1": "produce clearer texts",
+"2": "will revise the drafts",
+"3": "would use better connectors"
+}
+},
+{
+"id": "G039",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Listening Practice\n\nThe class practices listening. When students hear the audio twice, they (1) ____. If the speaker sends the file today, they (2) ____. If the room had better speakers, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"catch more details",
+"will answer the questions",
+"would understand the accent better",
+"will catch more details",
+"would catch more details",
+"answer the questions",
+"understand the accent better",
+"will understand the accent better",
+"would answer the questions"
+],
+"answers": {
+"1": "catch more details",
+"2": "will answer the questions",
+"3": "would understand the accent better"
+}
+},
+{
+"id": "G040",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Cultural Festival\n\nStudents plan a cultural festival. When people work in teams, they (1) ____. If the school approves the event, they (2) ____. If we had more volunteers, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"finish tasks on time",
+"will invite local artists",
+"would prepare more activities",
+"will finish tasks on time",
+"would finish tasks on time",
+"invite local artists",
+"prepare more activities",
+"will prepare more activities",
+"would invite local artists"
+],
+"answers": {
+"1": "finish tasks on time",
+"2": "will invite local artists",
+"3": "would prepare more activities"
+}
+},
+{
+"id": "G041",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Safety Drill\n\nThe school practices safety rules. When people follow instructions, they (1) ____. If the alarm sounds tomorrow, they (2) ____. If students knew the route, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"leave the building calmly",
+"will move to the meeting point",
+"would react faster",
+"will leave the building calmly",
+"would leave the building calmly",
+"move to the meeting point",
+"react faster",
+"will react faster",
+"would move to the meeting point"
+],
+"answers": {
+"1": "leave the building calmly",
+"2": "will move to the meeting point",
+"3": "would react faster"
+}
+},
+{
+"id": "G042",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Book Club\n\nFriends discuss a novel. When readers take notes, they (1) ____. If the author visits next month, they (2) ____. If we had more copies, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"remember important details",
+"will ask questions",
+"would include more members",
+"will remember important details",
+"would remember important details",
+"ask questions",
+"include more members",
+"will include more members",
+"would ask questions"
+],
+"answers": {
+"1": "remember important details",
+"2": "will ask questions",
+"3": "would include more members"
+}
+},
+{
+"id": "G043",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Entrepreneurship Class\n\nStudents design small projects. When teams test their ideas, they (1) ____. If investors visit the class, they (2) ____. If students had more experience, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"find problems early",
+"will present prototypes",
+"would improve their products",
+"will find problems early",
+"would find problems early",
+"present prototypes",
+"improve their products",
+"will improve their products",
+"would present prototypes"
+],
+"answers": {
+"1": "find problems early",
+"2": "will present prototypes",
+"3": "would improve their products"
+}
+},
+{
+"id": "G044",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Public Speaking\n\nStudents practice speeches. When speakers look at the audience, they (1) ____. If the teacher records the presentations, they (2) ____. If we were less afraid, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"connect better with listeners",
+"will analyze body language",
+"would speak more naturally",
+"will connect better with listeners",
+"would connect better with listeners",
+"analyze body language",
+"speak more naturally",
+"will speak more naturally",
+"would analyze body language"
+],
+"answers": {
+"1": "connect better with listeners",
+"2": "will analyze body language",
+"3": "would speak more naturally"
+}
+},
+{
+"id": "G045",
+"partKey": "P3",
+"part": "Part 3 · Text completion with nine-option bank",
+"type": "multiGap",
+"skill": "Mixed Conditionals",
+"instruction": "Read the short text. Choose three answers from the nine-option bank: one for gap 1, one for gap 2, and one for gap 3. Use each option only once.",
+"context": "Weekend Plan\n\nA group plans a weekend activity. When friends agree on the time, they (1) ____. If it is sunny on Saturday, they (2) ____. If we lived closer to the park, they (3) ____.",
+"prompt": "Complete gaps 1, 2 and 3 according to the meaning of the text.",
+"options": [
+"arrive together",
+"will play outside",
+"would meet more often",
+"will arrive together",
+"would arrive together",
+"play outside",
+"meet more often",
+"will meet more often",
+"would play outside"
+],
+"answers": {
+"1": "arrive together",
+"2": "will play outside",
+"3": "would meet more often"
+}
+},
+{
+"id": "R001",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Library Rule\n\nAt the community library, students concentrate better when the room is quiet. The librarian will open a second room if many students come tomorrow. She believes that if the library had more computers, more young people would use it after school.",
+"prompt": "What happens when the room is quiet?",
+"options": [
+"Students concentrate better.",
+"The librarian opens a second room.",
+"Young people would use more computers."
+],
+"answer": "Students concentrate better."
+},
+{
+"id": "R002",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Library Rule\n\nAt the community library, students concentrate better when the room is quiet. The librarian will open a second room if many students come tomorrow. She believes that if the library had more computers, more young people would use it after school.",
+"prompt": "What will the librarian do if many students come tomorrow?",
+"options": [
+"She will open a second room.",
+"She concentrates better.",
+"She would buy computers."
+],
+"answer": "She will open a second room."
+},
+{
+"id": "R003",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Library Rule\n\nAt the community library, students concentrate better when the room is quiet. The librarian will open a second room if many students come tomorrow. She believes that if the library had more computers, more young people would use it after school.",
+"prompt": "What would happen if the library had more computers?",
+"options": [
+"More young people would use it after school.",
+"Many students will come tomorrow.",
+"The room is quiet."
+],
+"answer": "More young people would use it after school."
+},
+{
+"id": "R004",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Football Team\n\nThe school football team trains after class. If players drink water during practice, they feel better. On Friday, if the team wins the final match, the students will celebrate in the cafeteria. The coach says that if the team had a bigger field, they would practice more tactical exercises.",
+"prompt": "What happens if players drink water during practice?",
+"options": [
+"They feel better.",
+"They will celebrate.",
+"They would practice tactics."
+],
+"answer": "They feel better."
+},
+{
+"id": "R005",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Football Team\n\nThe school football team trains after class. If players drink water during practice, they feel better. On Friday, if the team wins the final match, the students will celebrate in the cafeteria. The coach says that if the team had a bigger field, they would practice more tactical exercises.",
+"prompt": "What will happen if the team wins on Friday?",
+"options": [
+"Students will celebrate in the cafeteria.",
+"Players feel better every practice.",
+"The field would be bigger."
+],
+"answer": "Students will celebrate in the cafeteria."
+},
+{
+"id": "R006",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Football Team\n\nThe school football team trains after class. If players drink water during practice, they feel better. On Friday, if the team wins the final match, the students will celebrate in the cafeteria. The coach says that if the team had a bigger field, they would practice more tactical exercises.",
+"prompt": "What would the team do with a bigger field?",
+"options": [
+"They would practice more tactical exercises.",
+"They will celebrate on Friday.",
+"They feel better during practice."
+],
+"answer": "They would practice more tactical exercises."
+},
+{
+"id": "R007",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Museum Visit\n\nA group of students visits a museum every semester. When visitors read the labels carefully, they understand the objects better. If the guide arrives before ten tomorrow, the group will start with the ancient art room. The students say that if the museum were free, they would visit it more often.",
+"prompt": "What happens when visitors read labels carefully?",
+"options": [
+"They understand the objects better.",
+"They will start with ancient art.",
+"They would visit more often."
+],
+"answer": "They understand the objects better."
+},
+{
+"id": "R008",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Museum Visit\n\nA group of students visits a museum every semester. When visitors read the labels carefully, they understand the objects better. If the guide arrives before ten tomorrow, the group will start with the ancient art room. The students say that if the museum were free, they would visit it more often.",
+"prompt": "What will the group do if the guide arrives before ten?",
+"options": [
+"It will start with the ancient art room.",
+"It understands objects better.",
+"It would visit more often."
+],
+"answer": "It will start with the ancient art room."
+},
+{
+"id": "R009",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Museum Visit\n\nA group of students visits a museum every semester. When visitors read the labels carefully, they understand the objects better. If the guide arrives before ten tomorrow, the group will start with the ancient art room. The students say that if the museum were free, they would visit it more often.",
+"prompt": "What would students do if the museum were free?",
+"options": [
+"They would visit it more often.",
+"They will arrive before ten.",
+"They read labels every semester."
+],
+"answer": "They would visit it more often."
+},
+{
+"id": "R010",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Eco Club\n\nThe Eco Club teaches students to protect the school. If students separate plastic from paper, recycling becomes easier. Next month, if the club receives permission, it will paint new recycling boxes. The leader believes that if more teachers joined the club, the campaign would reach more classrooms.",
+"prompt": "What happens if students separate plastic from paper?",
+"options": [
+"Recycling becomes easier.",
+"The club will paint boxes.",
+"Teachers would join the club."
+],
+"answer": "Recycling becomes easier."
+},
+{
+"id": "R011",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Eco Club\n\nThe Eco Club teaches students to protect the school. If students separate plastic from paper, recycling becomes easier. Next month, if the club receives permission, it will paint new recycling boxes. The leader believes that if more teachers joined the club, the campaign would reach more classrooms.",
+"prompt": "What will the club do if it receives permission?",
+"options": [
+"It will paint new recycling boxes.",
+"It separates plastic from paper.",
+"It would reach more classrooms."
+],
+"answer": "It will paint new recycling boxes."
+},
+{
+"id": "R012",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Eco Club\n\nThe Eco Club teaches students to protect the school. If students separate plastic from paper, recycling becomes easier. Next month, if the club receives permission, it will paint new recycling boxes. The leader believes that if more teachers joined the club, the campaign would reach more classrooms.",
+"prompt": "What would happen if more teachers joined the club?",
+"options": [
+"The campaign would reach more classrooms.",
+"Recycling becomes easier.",
+"The club will ask permission."
+],
+"answer": "The campaign would reach more classrooms."
+},
+{
+"id": "R013",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The New Student\n\nMei is new at the university. When classmates invite her to work in groups, she feels more comfortable. If she joins the English club this week, she will meet students from other programs. She says that if she were less shy, she would speak more in class.",
+"prompt": "What happens when classmates invite Mei to groups?",
+"options": [
+"She feels more comfortable.",
+"She will meet new students.",
+"She would speak more."
+],
+"answer": "She feels more comfortable."
+},
+{
+"id": "R014",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The New Student\n\nMei is new at the university. When classmates invite her to work in groups, she feels more comfortable. If she joins the English club this week, she will meet students from other programs. She says that if she were less shy, she would speak more in class.",
+"prompt": "What will Mei do if she joins the English club?",
+"options": [
+"She will meet students from other programs.",
+"She feels more comfortable every time.",
+"She would become less shy."
+],
+"answer": "She will meet students from other programs."
+},
+{
+"id": "R015",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The New Student\n\nMei is new at the university. When classmates invite her to work in groups, she feels more comfortable. If she joins the English club this week, she will meet students from other programs. She says that if she were less shy, she would speak more in class.",
+"prompt": "What would Mei do if she were less shy?",
+"options": [
+"She would speak more in class.",
+"She will join the club this week.",
+"Classmates invite her to groups."
+],
+"answer": "She would speak more in class."
+},
+{
+"id": "R016",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Cooking Class\n\nIn the cooking class, students learn simple recipes. If they heat oil too much, it burns. If the teacher brings vegetables tomorrow, the class will make soup. One student says that if he had a bigger kitchen at home, he would cook for his family more often.",
+"prompt": "What happens if students heat oil too much?",
+"options": [
+"It burns.",
+"The class will make soup.",
+"One student would cook more."
+],
+"answer": "It burns."
+},
+{
+"id": "R017",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Cooking Class\n\nIn the cooking class, students learn simple recipes. If they heat oil too much, it burns. If the teacher brings vegetables tomorrow, the class will make soup. One student says that if he had a bigger kitchen at home, he would cook for his family more often.",
+"prompt": "What will the class do if the teacher brings vegetables?",
+"options": [
+"It will make soup.",
+"Oil burns.",
+"The student would cook at home."
+],
+"answer": "It will make soup."
+},
+{
+"id": "R018",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Cooking Class\n\nIn the cooking class, students learn simple recipes. If they heat oil too much, it burns. If the teacher brings vegetables tomorrow, the class will make soup. One student says that if he had a bigger kitchen at home, he would cook for his family more often.",
+"prompt": "What would one student do with a bigger kitchen?",
+"options": [
+"He would cook for his family more often.",
+"He will bring vegetables tomorrow.",
+"The class learns recipes."
+],
+"answer": "He would cook for his family more often."
+},
+{
+"id": "R019",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Science Fair\n\nThe class is preparing a science fair. If magnets are near some metals, they attract them. If the team finishes the experiment today, it will record a short explanation. The teacher says that if the students had more materials, they would build a larger model.",
+"prompt": "What happens when magnets are near some metals?",
+"options": [
+"They attract them.",
+"The team will record an explanation.",
+"Students would build a model."
+],
+"answer": "They attract them."
+},
+{
+"id": "R020",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Science Fair\n\nThe class is preparing a science fair. If magnets are near some metals, they attract them. If the team finishes the experiment today, it will record a short explanation. The teacher says that if the students had more materials, they would build a larger model.",
+"prompt": "What will the team do if it finishes the experiment?",
+"options": [
+"It will record a short explanation.",
+"Magnets attract metals.",
+"It would build a larger model."
+],
+"answer": "It will record a short explanation."
+},
+{
+"id": "R021",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Science Fair\n\nThe class is preparing a science fair. If magnets are near some metals, they attract them. If the team finishes the experiment today, it will record a short explanation. The teacher says that if the students had more materials, they would build a larger model.",
+"prompt": "What would students do with more materials?",
+"options": [
+"They would build a larger model.",
+"They will finish today.",
+"Magnets are near metals."
+],
+"answer": "They would build a larger model."
+},
+{
+"id": "R022",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Debate Club\n\nThe Debate Club meets on Wednesdays. When students listen carefully, discussions become more respectful. If the club has enough participants next week, it will organize a public debate. The president says that if students read more news, their arguments would be stronger.",
+"prompt": "What happens when students listen carefully?",
+"options": [
+"Discussions become more respectful.",
+"The club will organize a public debate.",
+"Arguments would be stronger."
+],
+"answer": "Discussions become more respectful."
+},
+{
+"id": "R023",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Debate Club\n\nThe Debate Club meets on Wednesdays. When students listen carefully, discussions become more respectful. If the club has enough participants next week, it will organize a public debate. The president says that if students read more news, their arguments would be stronger.",
+"prompt": "What will the club do if it has enough participants?",
+"options": [
+"It will organize a public debate.",
+"It meets on Wednesdays.",
+"Students would read more news."
+],
+"answer": "It will organize a public debate."
+},
+{
+"id": "R024",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Debate Club\n\nThe Debate Club meets on Wednesdays. When students listen carefully, discussions become more respectful. If the club has enough participants next week, it will organize a public debate. The president says that if students read more news, their arguments would be stronger.",
+"prompt": "What would happen if students read more news?",
+"options": [
+"Their arguments would be stronger.",
+"The club will meet next week.",
+"Discussions become shorter."
+],
+"answer": "Their arguments would be stronger."
+},
+{
+"id": "R025",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Volunteer Day\n\nA group plans a volunteer day in a park. If people clean public spaces, the community looks better. If twenty students register by Friday, the group will organize two work teams. The organizer believes that if more families participated, the activity would have a stronger impact.",
+"prompt": "What happens if people clean public spaces?",
+"options": [
+"The community looks better.",
+"The group will organize teams.",
+"Families would register by Friday."
+],
+"answer": "The community looks better."
+},
+{
+"id": "R026",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Volunteer Day\n\nA group plans a volunteer day in a park. If people clean public spaces, the community looks better. If twenty students register by Friday, the group will organize two work teams. The organizer believes that if more families participated, the activity would have a stronger impact.",
+"prompt": "What will happen if twenty students register?",
+"options": [
+"The group will organize two work teams.",
+"The community looks better.",
+"Families participate every week."
+],
+"answer": "The group will organize two work teams."
+},
+{
+"id": "R027",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Volunteer Day\n\nA group plans a volunteer day in a park. If people clean public spaces, the community looks better. If twenty students register by Friday, the group will organize two work teams. The organizer believes that if more families participated, the activity would have a stronger impact.",
+"prompt": "What would happen if more families participated?",
+"options": [
+"The activity would have a stronger impact.",
+"The group will register by Friday.",
+"The community always looks better."
+],
+"answer": "The activity would have a stronger impact."
+},
+{
+"id": "R028",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Art Exhibition\n\nStudents are preparing an art exhibition. When visitors ask questions, artists explain their ideas better. If the school opens the hall on Saturday, families will attend the event. The art teacher says that if the students had more time, they would create larger paintings.",
+"prompt": "What happens when visitors ask questions?",
+"options": [
+"Artists explain their ideas better.",
+"Families will attend the event.",
+"Students would open the hall."
+],
+"answer": "Artists explain their ideas better."
+},
+{
+"id": "R029",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Art Exhibition\n\nStudents are preparing an art exhibition. When visitors ask questions, artists explain their ideas better. If the school opens the hall on Saturday, families will attend the event. The art teacher says that if the students had more time, they would create larger paintings.",
+"prompt": "What will happen if the school opens the hall?",
+"options": [
+"Families will attend the event.",
+"Artists explain ideas every time.",
+"Students would create smaller paintings."
+],
+"answer": "Families will attend the event."
+},
+{
+"id": "R030",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Art Exhibition\n\nStudents are preparing an art exhibition. When visitors ask questions, artists explain their ideas better. If the school opens the hall on Saturday, families will attend the event. The art teacher says that if the students had more time, they would create larger paintings.",
+"prompt": "What would students create if they had more time?",
+"options": [
+"They would create larger paintings.",
+"They will attend with families.",
+"Visitors ask questions."
+],
+"answer": "They would create larger paintings."
+},
+{
+"id": "R031",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Career Workshop\n\nThe university offers a career workshop every month. When students prepare questions, they get more useful advice. If the invited engineer arrives tomorrow, she will explain how interviews work. The coordinator says that if the workshop had more time, students would practice real interviews.",
+"prompt": "What happens when students prepare questions?",
+"options": [
+"They get more useful advice.",
+"The engineer will arrive tomorrow.",
+"Students would practice interviews."
+],
+"answer": "They get more useful advice."
+},
+{
+"id": "R032",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Career Workshop\n\nThe university offers a career workshop every month. When students prepare questions, they get more useful advice. If the invited engineer arrives tomorrow, she will explain how interviews work. The coordinator says that if the workshop had more time, students would practice real interviews.",
+"prompt": "What will the engineer do if she arrives tomorrow?",
+"options": [
+"She will explain how interviews work.",
+"Students get advice every month.",
+"The workshop would be longer."
+],
+"answer": "She will explain how interviews work."
+},
+{
+"id": "R033",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Career Workshop\n\nThe university offers a career workshop every month. When students prepare questions, they get more useful advice. If the invited engineer arrives tomorrow, she will explain how interviews work. The coordinator says that if the workshop had more time, students would practice real interviews.",
+"prompt": "What would students do if the workshop had more time?",
+"options": [
+"They would practice real interviews.",
+"They will prepare questions tomorrow.",
+"The engineer arrives every month."
+],
+"answer": "They would practice real interviews."
+},
+{
+"id": "R034",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Reading App\n\nA teacher recommends a reading app. If students read ten minutes every day, they increase their vocabulary. If the app sends reminders tonight, more students will complete the task. The teacher thinks that if the app had more short stories, learners would use it more often.",
+"prompt": "What happens if students read ten minutes every day?",
+"options": [
+"They increase their vocabulary.",
+"They will complete the task tonight.",
+"Learners would use the app more."
+],
+"answer": "They increase their vocabulary."
+},
+{
+"id": "R035",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Reading App\n\nA teacher recommends a reading app. If students read ten minutes every day, they increase their vocabulary. If the app sends reminders tonight, more students will complete the task. The teacher thinks that if the app had more short stories, learners would use it more often.",
+"prompt": "What will happen if the app sends reminders tonight?",
+"options": [
+"More students will complete the task.",
+"Students increase vocabulary every day.",
+"The app would have more stories."
+],
+"answer": "More students will complete the task."
+},
+{
+"id": "R036",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Reading App\n\nA teacher recommends a reading app. If students read ten minutes every day, they increase their vocabulary. If the app sends reminders tonight, more students will complete the task. The teacher thinks that if the app had more short stories, learners would use it more often.",
+"prompt": "What would happen if the app had more short stories?",
+"options": [
+"Learners would use it more often.",
+"It will send reminders tonight.",
+"Students read ten minutes every day."
+],
+"answer": "Learners would use it more often."
+},
+{
+"id": "R037",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Radio Project\n\nStudents are recording a radio project. When speakers practice before recording, they sound more natural. If the technician brings a better microphone tomorrow, the group will record the final episode. The teacher says that if students had more listeners, they would prepare longer programs.",
+"prompt": "What happens when speakers practice before recording?",
+"options": [
+"They sound more natural.",
+"The group will record the final episode.",
+"They would prepare longer programs."
+],
+"answer": "They sound more natural."
+},
+{
+"id": "R038",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Radio Project\n\nStudents are recording a radio project. When speakers practice before recording, they sound more natural. If the technician brings a better microphone tomorrow, the group will record the final episode. The teacher says that if students had more listeners, they would prepare longer programs.",
+"prompt": "What will happen if the technician brings a better microphone?",
+"options": [
+"The group will record the final episode.",
+"Speakers sound more natural.",
+"Students would have listeners."
+],
+"answer": "The group will record the final episode."
+},
+{
+"id": "R039",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Radio Project\n\nStudents are recording a radio project. When speakers practice before recording, they sound more natural. If the technician brings a better microphone tomorrow, the group will record the final episode. The teacher says that if students had more listeners, they would prepare longer programs.",
+"prompt": "What would students do with more listeners?",
+"options": [
+"They would prepare longer programs.",
+"They will bring a microphone.",
+"They practice before recording."
+],
+"answer": "They would prepare longer programs."
+},
+{
+"id": "R040",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Health Campaign\n\nThe school begins a health campaign. If people wash their hands before eating, they reduce the risk of infections. If the nurse visits the classroom tomorrow, she will explain simple habits. The principal believes that if families received more information, they would support the campaign at home.",
+"prompt": "What happens if people wash their hands before eating?",
+"options": [
+"They reduce the risk of infections.",
+"The nurse will visit tomorrow.",
+"Families would support the campaign."
+],
+"answer": "They reduce the risk of infections."
+},
+{
+"id": "R041",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Health Campaign\n\nThe school begins a health campaign. If people wash their hands before eating, they reduce the risk of infections. If the nurse visits the classroom tomorrow, she will explain simple habits. The principal believes that if families received more information, they would support the campaign at home.",
+"prompt": "What will the nurse do if she visits the classroom?",
+"options": [
+"She will explain simple habits.",
+"People reduce infections.",
+"Families would get information."
+],
+"answer": "She will explain simple habits."
+},
+{
+"id": "R042",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Health Campaign\n\nThe school begins a health campaign. If people wash their hands before eating, they reduce the risk of infections. If the nurse visits the classroom tomorrow, she will explain simple habits. The principal believes that if families received more information, they would support the campaign at home.",
+"prompt": "What would happen if families received more information?",
+"options": [
+"They would support the campaign at home.",
+"They will visit the classroom.",
+"People wash their hands every day."
+],
+"answer": "They would support the campaign at home."
+},
+{
+"id": "R043",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Zero Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Community Garden\n\nNeighbors take care of a community garden. When plants receive enough water, they grow faster. If the group buys seeds this weekend, it will plant new flowers near the entrance. The organizer says that if more children helped, they would learn about nature.",
+"prompt": "What happens when plants receive enough water?",
+"options": [
+"They grow faster.",
+"The group will buy seeds.",
+"Children would learn about nature."
+],
+"answer": "They grow faster."
+},
+{
+"id": "R044",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "First Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Community Garden\n\nNeighbors take care of a community garden. When plants receive enough water, they grow faster. If the group buys seeds this weekend, it will plant new flowers near the entrance. The organizer says that if more children helped, they would learn about nature.",
+"prompt": "What will the group do if it buys seeds?",
+"options": [
+"It will plant new flowers near the entrance.",
+"Plants grow faster.",
+"Children would help."
+],
+"answer": "It will plant new flowers near the entrance."
+},
+{
+"id": "R045",
+"partKey": "P4",
+"part": "Part 4 · Reading comprehension",
+"type": "single",
+"skill": "Second Conditional",
+"instruction": "Read the text and choose the best answer.",
+"context": "The Community Garden\n\nNeighbors take care of a community garden. When plants receive enough water, they grow faster. If the group buys seeds this weekend, it will plant new flowers near the entrance. The organizer says that if more children helped, they would learn about nature.",
+"prompt": "What would happen if more children helped?",
+"options": [
+"They would learn about nature.",
+"The group will plant flowers.",
+"Plants receive water."
+],
+"answer": "They would learn about nature."
+}
+]</script>
+  <script>
+    "use strict";
+    const BANK = JSON.parse(document.getElementById("questionBank").textContent);
+    const TOTAL_TO_ASK = 60;
+    const SESSION_KEY = "conditionalChallengeSession_v6_60_questions";
+    const UNLOCK_CODE = [49,57,57,49].map(c=>String.fromCharCode(c)).join("");
+    const PLAN = [
+      { key:"P1", take:12, label:"Part 1" },
+      { key:"P2", take:12, label:"Part 2" },
+      { key:"P3", take:18, label:"Part 3" },
+      { key:"P4", take:18, label:"Part 4" }
+    ];
+    const $ = id => document.getElementById(id);
+    const state = { started:false, completed:false, locked:false, selected:[], current:0, responses:{}, notes:{}, invalid:{}, securityEvents:[], startTime:null, endTime:null, optionOrders:{} };
+
+    function shuffle(array) { const a=[...array]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    function sampleQuestions() { const selected=[]; PLAN.forEach(p=>{ const partItems=BANK.filter(q=>q.partKey===p.key); selected.push(...shuffle(partItems).slice(0,p.take)); }); return selected.map(q=>q.id); }
+    function getQuestionById(id) { return BANK.find(q=>q.id===id); }
+    function saveSession() { try{localStorage.setItem(SESSION_KEY,JSON.stringify(state));}catch(e){} }
+    function loadSession() { try{const raw=localStorage.getItem(SESSION_KEY); if(!raw) return false; const saved=JSON.parse(raw); if(!saved||!saved.started||saved.completed) return false; Object.assign(state,saved); return true;}catch(e){return false;} }
+    function clearSession() { localStorage.removeItem(SESSION_KEY); }
+    function escapeHTML(str) { return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+    function formatTime(ms) { const total=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60; const two=n=>String(n).padStart(2,"0"); return h>0?`${two(h)}:${two(m)}:${two(s)}`:`${two(m)}:${two(s)}`; }
+    function elapsedMs() { const end=state.completed?state.endTime:Date.now(); return state.startTime?end-state.startTime:0; }
+    function showScreen(name) { ["startScreen","examScreen","resultScreen"].forEach(id=>$(id).classList.remove("active")); $(name).classList.add("active"); }
+    function toast(msg) { const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2400); }
+    function ensureOptionOrder(q) { if(!state.optionOrders[q.id]) state.optionOrders[q.id]=shuffle(q.options); return state.optionOrders[q.id]; }
+    function currentQuestion() { return getQuestionById(state.selected[state.current]); }
+    function currentPartPosition() { const q=currentQuestion(); const same=state.selected.map(getQuestionById).filter(x=>x.partKey===q.partKey); const currentSame=state.selected.slice(0,state.current+1).map(getQuestionById).filter(x=>x.partKey===q.partKey).length; return `${currentSame}/${same.length}`; }
+
+    function startExam() { Object.assign(state,{started:true,completed:false,locked:false,selected:sampleQuestions(),current:0,responses:{},notes:{},invalid:{},securityEvents:[],startTime:Date.now(),endTime:null,optionOrders:{}}); saveSession(); showScreen("examScreen"); renderQuestion(); toast("Evaluación iniciada."); }
+
+    function isAnswered(q) { return Boolean(state.responses[q.id]) || Boolean(state.invalid[q.id]); }
+    function responseIsCorrect(q) { const r=state.responses[q.id]; if(!r || state.invalid[q.id]) return false; if(q.type==="multiGap") return ["1","2","3"].every(k => r[k] === q.answers[k]); return r.answer === q.answer; }
+
+    function renderQuestion() {
+      if(!state.started||state.completed) return; const q=currentQuestion(); if(!q) return finishExam();
+      const progress=((state.current+1)/TOTAL_TO_ASK)*100; $("progressBar").style.width=`${progress}%`; $("progressText").textContent=`Pregunta ${state.current+1} de ${TOTAL_TO_ASK}`;
+      $("partChip").textContent=q.part; $("skillChip").textContent=q.skill; $("answeredChip").textContent=`${Object.keys(state.responses).length + Object.keys(state.invalid).length}/${TOTAL_TO_ASK} respondidas`; $("securityChip").textContent=`${state.securityEvents.length} eventos de seguridad`; $("instructionText").textContent=q.instruction; $("sectionIndexChip").textContent=`Avance de parte: ${currentPartPosition()}`;
+      $("contextText").textContent=q.context||""; $("contextText").style.display=q.context?"block":"none"; $("promptText").textContent=q.prompt;
+      $("optionsBox").innerHTML=""; $("gapBox").innerHTML="";
+      if(q.type==="multiGap") renderGapQuestion(q); else renderSingleQuestion(q);
+      $("prevBtn").disabled=state.current===0||state.locked; $("nextBtn").textContent=state.current===TOTAL_TO_ASK-1?"Finalizar evaluación":"Guardar y continuar"; updateFeedback(q); updateNavState(); drawProgressCanvas();
+    }
+
+    function renderSingleQuestion(q) {
+      const options=ensureOptionOrder(q), letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), resp=state.responses[q.id], invalid=Boolean(state.invalid[q.id]); const box=$("optionsBox");
+      options.forEach((opt,idx)=>{ const btn=document.createElement("button"); btn.type="button"; btn.className="option"; if(resp && resp.answer===opt) btn.classList.add("selected", resp.answer===q.answer?"correctSelected":"incorrectSelected"); if(invalid) btn.classList.add("incorrectSelected"); btn.disabled=Boolean(resp)||invalid; btn.innerHTML=`<span class="letter">${letters[idx]}</span><span>${escapeHTML(opt)}</span>`; btn.addEventListener("click",()=>{ if(state.locked||state.completed||state.invalid[q.id]||state.responses[q.id]) return; state.responses[q.id]={answer:opt,submittedAt:Date.now()}; saveSession(); renderQuestion(); }); box.appendChild(btn); });
+    }
+
+    function renderGapQuestion(q) {
+      const options=ensureOptionOrder(q), letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), resp=state.responses[q.id], locked=Boolean(resp)||Boolean(state.invalid[q.id]);
+      const bank=document.createElement("div"); bank.className="option-bank";
+      options.forEach((opt,idx)=>{ const item=document.createElement("div"); item.className="bank-item"; item.innerHTML=`<strong>${letters[idx]}.</strong> ${escapeHTML(opt)}`; bank.appendChild(item); });
+      $("gapBox").appendChild(bank);
+      ["1","2","3"].forEach(k=>{ const card=document.createElement("div"); card.className="gap-card"; const val=resp?resp[k]:""; const correct=resp?val===q.answers[k]:null; card.innerHTML=`<label>Gap ${k}</label><select id="gap_${k}" ${locked?"disabled":""}><option value="">Select one option...</option>${options.map((opt,idx)=>`<option value="${escapeHTML(opt)}" ${val===opt?"selected":""}>${letters[idx]}. ${escapeHTML(opt)}</option>`).join("")}</select>${resp?`<div class="${correct?"okText":"badText"}">${correct?"Correct":"Incorrect"}</div>`:""}`; $("gapBox").appendChild(card); });
+      if(!locked){ const btn=document.createElement("button"); btn.type="button"; btn.textContent="Guardar respuesta de los 3 espacios"; btn.addEventListener("click",()=>{ const vals={"1":$("gap_1").value,"2":$("gap_2").value,"3":$("gap_3").value}; if(!vals["1"]||!vals["2"]||!vals["3"]){ toast("Completen los tres espacios antes de guardar."); return; } if(new Set(Object.values(vals)).size<3){ toast("Usen tres opciones diferentes."); return; } state.responses[q.id]={...vals,submittedAt:Date.now()}; saveSession(); renderQuestion(); }); $("gapBox").appendChild(btn); }
+    }
+
+    function updateFeedback(q) {
+      const fb=$("feedbackBox"), resp=state.responses[q.id], invalid=Boolean(state.invalid[q.id]); fb.className="feedback warn";
+      if(invalid){ fb.className="feedback bad"; fb.textContent="Pregunta invalidada por seguridad. Cuenta como incorrecta."; return; }
+      if(!resp){ fb.textContent=q.type==="multiGap"?"Seleccionen una opción para cada espacio y luego guarden la respuesta.":"Seleccionen una opción para recibir retroalimentación inmediata."; return; }
+      if(q.type==="multiGap"){ const ok=["1","2","3"].map(k=>resp[k]===q.answers[k]); const total=ok.filter(Boolean).length; fb.className= total===3?"feedback ok":"feedback bad"; fb.textContent= total===3?"Correct. Los tres espacios están bien resueltos.":`Incorrect. Espacios correctos: ${total} de 3.`; }
+      else { const ok=resp.answer===q.answer; fb.className=ok?"feedback ok":"feedback bad"; fb.textContent=ok?"Correct. Respuesta guardada.":"Incorrect. Respuesta guardada."; }
+    }
+
+    function updateNavState() { const q=currentQuestion(); const answered=q&&(isAnswered(q)); $("nextBtn").disabled=state.locked||!answered; if(!answered) $("questionStatus").textContent="Respondan la pregunta para continuar."; else $("questionStatus").innerHTML="<span class='okText'>Respuesta registrada. Pueden continuar.</span>"; }
+    function nextQuestion() { const q=currentQuestion(); if(!isAnswered(q)){toast("Respondan antes de continuar.");return;} if(state.current>=TOTAL_TO_ASK-1){ const unanswered=state.selected.filter(id=>!state.responses[id]&&!state.invalid[id]).length; if(unanswered>0){toast(`Aún hay ${unanswered} preguntas sin responder.`);return;} finishExam(); } else { state.current++; saveSession(); renderQuestion(); window.scrollTo({top:0,behavior:"smooth"}); } }
+    function prevQuestion() { if(state.current>0&&!state.locked){state.current--;saveSession();renderQuestion();window.scrollTo({top:0,behavior:"smooth"});} }
+
+    function computeResults() { let correct=0; const rows=state.selected.map((id,idx)=>{ const q=getQuestionById(id); const invalid=Boolean(state.invalid[id]); const r=state.responses[id]; const ok=!invalid&&responseIsCorrect(q); if(ok) correct++; let selected="Sin respuesta"; if(r) selected=q.type==="multiGap"?`1) ${r["1"]||""} | 2) ${r["2"]||""} | 3) ${r["3"]||""}`:(r.answer||"Sin respuesta"); let right=q.type==="multiGap"?`1) ${q.answers["1"]} | 2) ${q.answers["2"]} | 3) ${q.answers["3"]}`:q.answer; return {index:idx+1,id,part:q.part,partKey:q.partKey,skill:q.skill,type:q.type,prompt:q.prompt,selected,correct:right,ok,invalid}; }); const grade=Math.round((correct/TOTAL_TO_ASK)*50)/10; return {correct,grade:grade.toFixed(1),rows}; }
+    function finishExam() { state.completed=true; state.endTime=Date.now(); saveSession(); document.body.classList.add("completed"); showScreen("resultScreen"); renderResults(false); }
+    function renderResults(showAnswers) { const res=computeResults(); $("teamSummary").textContent="Evaluación completada."; $("scoreBox").textContent=`${res.correct}/${TOTAL_TO_ASK}`; $("gradeBox").textContent=res.grade; $("timeBox").textContent=formatTime(elapsedMs()); $("violationsBox").textContent=String(state.securityEvents.length); const groups={}; res.rows.forEach(r=>{ if(!groups[r.part]) groups[r.part]={total:0,ok:0}; groups[r.part].total++; if(r.ok) groups[r.part].ok++; }); $("breakdownTable").innerHTML="<tr><th>Parte</th><th>Correctas</th><th>Total</th><th>Porcentaje</th></tr>"+Object.entries(groups).map(([part,g])=>`<tr><td>${escapeHTML(part)}</td><td>${g.ok}</td><td>${g.total}</td><td>${Math.round((g.ok/g.total)*100)}%</td></tr>`).join(""); if(showAnswers){ const review=$("reviewBox"); review.classList.add("show"); review.innerHTML="<h3>Revisión docente con clave</h3>"+res.rows.map(r=>`<div class="review-item"><div><strong>${r.index}. ${escapeHTML(r.part)} · ${escapeHTML(r.skill)}</strong> <span class="${r.ok?"okText":"badText"}">${r.ok?"Correcta":"Incorrecta"}</span></div><div class="small">ID: ${r.id} ${r.invalid?"· INVALIDADA POR SEGURIDAD":""}</div><div><strong>Pregunta:</strong> ${escapeHTML(r.prompt)}</div><div><strong>Respuesta seleccionada:</strong> ${escapeHTML(r.selected)}</div><div><strong>Respuesta correcta:</strong> ${escapeHTML(r.correct)}</div></div>`).join(""); } }
+    function buildReport(withAnswers=false) { const res=computeResults(); const lines=[]; lines.push("CONDITIONAL CHALLENGE V5 · REPORTE DE EVALUACIÓN"); lines.push(`Fecha: ${new Date(state.endTime||Date.now()).toLocaleString()}`); lines.push(`Tiempo usado: ${formatTime(elapsedMs())}`); lines.push(`Correctas: ${res.correct}/${TOTAL_TO_ASK}`); lines.push(`Nota final: ${res.grade} / 5.0`); lines.push(`Eventos de seguridad: ${state.securityEvents.length}`); lines.push(""); if(state.securityEvents.length){ lines.push("EVENTOS DE SEGURIDAD"); state.securityEvents.forEach((e,i)=>lines.push(`${i+1}. ${new Date(e.time).toLocaleString()} · Pregunta ${e.questionNumber||"N/A"} · ${e.questionId||"N/A"} · ${e.type}`)); lines.push(""); } lines.push("RESPUESTAS"); res.rows.forEach(r=>{ lines.push(`${r.index}. [${r.ok?"OK":"NO"}] ${r.part} · ${r.skill} · ID ${r.id}${r.invalid?" · INVALIDADA":""}`); lines.push(`Pregunta: ${r.prompt}`); lines.push(`Respuesta seleccionada: ${r.selected}`); if(withAnswers) lines.push(`Respuesta correcta: ${r.correct}`); lines.push(""); }); return lines.join("\n"); }
+    function downloadText(filename,text) { const blob=new Blob([text],{type:"text/plain;charset=utf-8"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+    function showOverview() { const answered=state.selected.filter(id=>state.responses[id]||state.invalid[id]).length; const missing=TOTAL_TO_ASK-answered; toast(`Avance: ${answered} respondidas, ${missing} pendientes.`); }
+
+    function registerViolation(type) { if(!state.started||state.completed||state.locked) return; const q=currentQuestion(); const event={time:Date.now(),type,questionNumber:q?state.current+1:null,questionId:q?q.id:null}; state.securityEvents.push(event); if(q&&!state.invalid[q.id]){state.invalid[q.id]=true; if(!state.responses[q.id]) state.responses[q.id]={security:"invalidated"};} if(state.current<TOTAL_TO_ASK-1) state.current++; state.locked=true; saveSession(); $("lockReason").textContent=type; $("lockOverlay").classList.add("show"); $("unlockInput").value=""; setTimeout(()=>$("unlockInput").focus(),200); }
+    function unlock() { if($("unlockInput").value.trim()===UNLOCK_CODE){state.locked=false;saveSession();$("lockOverlay").classList.remove("show");showScreen("examScreen");renderQuestion();toast("Evaluación desbloqueada.");} else {toast("Código incorrecto.");$("unlockInput").value="";} }
+
+    function drawProgressCanvas() { const canvas=$("progressCanvas"); if(!canvas) return; const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,center=w/2,radius=30; ctx.clearRect(0,0,w,h); ctx.lineWidth=8; ctx.strokeStyle="rgba(255,255,255,.15)"; ctx.beginPath(); ctx.arc(center,center,radius,0,Math.PI*2); ctx.stroke(); const pct=(state.current+1)/TOTAL_TO_ASK; const grad=ctx.createLinearGradient(0,0,w,h); grad.addColorStop(0,"#7dd3fc"); grad.addColorStop(1,"#c084fc"); ctx.strokeStyle=grad; ctx.beginPath(); ctx.arc(center,center,radius,-Math.PI/2,-Math.PI/2+Math.PI*2*pct); ctx.stroke(); ctx.fillStyle="#fff"; ctx.font="bold 18px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(String(state.current+1),center,center); }
+    function drawBackground() { const canvas=$("bgCanvas"), ctx=canvas.getContext("2d"), dpr=window.devicePixelRatio||1; const resize=()=>{canvas.width=window.innerWidth*dpr; canvas.height=window.innerHeight*dpr;}; resize(); window.addEventListener("resize",resize); let t=0; function frame(){t+=.008; ctx.clearRect(0,0,canvas.width,canvas.height); const w=canvas.width,h=canvas.height,step=Math.max(75*dpr,Math.min(w,h)/8); ctx.lineWidth=1*dpr; for(let x=-step;x<w+step;x+=step){for(let y=-step;y<h+step;y+=step){const dx=Math.sin(t+x*.002+y*.001)*10*dpr,dy=Math.cos(t+x*.001-y*.002)*10*dpr; ctx.strokeStyle="rgba(125,211,252,.08)"; ctx.beginPath(); ctx.arc(x+dx,y+dy,2.5*dpr,0,Math.PI*2); ctx.stroke(); if(x+step<w){ctx.beginPath();ctx.moveTo(x+dx,y+dy);ctx.lineTo(x+step+dx,y+dy);ctx.stroke();}}} requestAnimationFrame(frame);} frame(); }
+    function updateTimer() { if(state.started&&!state.completed) $("elapsedTime").textContent=formatTime(elapsedMs()); }
+    function isTypingElement(el) { return el && (["INPUT","TEXTAREA","SELECT"].includes(el.tagName) || el.isContentEditable); }
+
+    document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") registerViolation("Cambio de pestaña, aplicación o pantalla detectado."); });
+    window.addEventListener("pagehide",()=>{ registerViolation("Salida o cierre de la página detectado."); });
+    window.addEventListener("blur",()=>{ setTimeout(()=>{ if(!state.started||state.completed||state.locked) return; if(isTypingElement(document.activeElement)) return; if(!document.hasFocus()) registerViolation("La ventana de evaluación perdió el foco."); },300); });
+    document.addEventListener("focusout",e=>{ setTimeout(()=>{ if(!state.started||state.completed||state.locked) return; if(isTypingElement(e.target)||isTypingElement(document.activeElement)) return; if(!document.hasFocus()) registerViolation("Foco fuera del área de evaluación."); },220); });
+    setInterval(()=>{ if(!state.started||state.completed||state.locked) return; if(isTypingElement(document.activeElement)) return; if(document.visibilityState==="visible"&&!document.hasFocus()) registerViolation("Verificación periódica: foco externo detectado."); },450);
+    ["copy","cut","paste","dragstart","drop"].forEach(evt=>{ document.addEventListener(evt,e=>{ if(!state.started||state.completed) return; e.preventDefault(); registerViolation(`Acción no permitida: ${evt}.`); }); });
+    document.addEventListener("contextmenu",e=>{ if(!state.started||state.completed) return; e.preventDefault(); registerViolation("Menú contextual no permitido."); });
+    window.addEventListener("beforeprint",()=>registerViolation("Intento de impresión detectado."));
+    document.addEventListener("keydown",e=>{ if(!state.started||state.completed) return; const key=e.key.toLowerCase(); const blockedCtrl=e.ctrlKey&&["c","v","x","a","p","s","f","u","r"].includes(key); const blockedShift=e.ctrlKey&&e.shiftKey&&["i","j","c"].includes(key); const blockedF12=e.key==="F12"; if(blockedCtrl||blockedShift||blockedF12){e.preventDefault(); registerViolation("Atajo de teclado restringido.");} });
+    window.addEventListener("beforeunload",e=>{ if(state.started&&!state.completed){e.preventDefault(); e.returnValue="";} });
+
+    $("startActivityBtn").addEventListener("click",()=>startExam());
+    $("nextBtn").addEventListener("click",nextQuestion); $("prevBtn").addEventListener("click",prevQuestion); $("overviewBtn").addEventListener("click",showOverview); $("unlockBtn").addEventListener("click",unlock); $("unlockInput").addEventListener("keydown",e=>{if(e.key==="Enter") unlock();});
+    $("downloadStudentReport").addEventListener("click",()=>downloadText("reporte_conditional_challenge_v6_60_estudiantes.txt",buildReport(false)));
+    $("teacherReviewBtn").addEventListener("click",()=>{ const code=prompt("Ingrese el código docente para mostrar revisión y descargar reporte con clave:"); if(code&&code.trim()===UNLOCK_CODE){renderResults(true);downloadText("reporte_conditional_challenge_v6_60_docente.txt",buildReport(true));} else if(code!==null) toast("Código incorrecto."); });
+    $("restartBtn").addEventListener("click",()=>{ const code=prompt("Ingrese el código docente para iniciar un nuevo intento:"); if(code&&code.trim()===UNLOCK_CODE){clearSession();location.reload();} else if(code!==null) toast("Código incorrecto."); });
+
+    function forceInitialMatrix() {
+      try {
+        [
+          "conditionalChallengeSession_v3_start_activity",
+          "conditionalChallengeSession_v5_start_from_matrix",
+          "conditionalChallengeSession_v6_60_questions",
+          SESSION_KEY
+        ].forEach(k => localStorage.removeItem(k));
+      } catch(e) {}
+      Object.assign(state,{started:false,completed:false,locked:false,selected:[],current:0,responses:{},notes:{},invalid:{},securityEvents:[],startTime:null,endTime:null,optionOrders:{}});
+      showScreen("startScreen");
+      document.body.classList.remove("completed");
+    }
+
+    drawBackground(); setInterval(updateTimer,1000);
+    forceInitialMatrix();
+  </script>
+</body>
+</html>
